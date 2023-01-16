@@ -33,7 +33,21 @@ export default class P2P extends EventEmitter {
     libp2p?: Libp2p;
     _lock_init: Promise<void>;
 
-    constructor(isNodejs: boolean = false) {
+    constructor({
+        isNodejs,
+        bootstrapAddrs,
+        listenAddrs,
+        announceAddrs,
+        appendAnnounceAddrs,
+        noAnnounceAddrs
+    }: {
+        isNodejs?: boolean;
+        bootstrapAddrs?: string[];
+        listenAddrs?: string[];
+        announceAddrs?: string[];
+        appendAnnounceAddrs?: string[];
+        noAnnounceAddrs?: string[];
+    }) {
         super();
 
         let resolveLock: () => void;
@@ -73,7 +87,7 @@ export default class P2P extends EventEmitter {
                     "/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
                     "/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt",
                     "/dns/ipfs-a02-cf.badaimweeb.me/tcp/443/wss/p2p/12D3KooWHeD2fKFK6LumJGjtWS4oh3v4TsDex1Q1ftgJaco5QWvn"
-                ]
+                ].concat(bootstrapAddrs || [])
             }));
 
             let libp2p = await createLibp2p({
@@ -91,6 +105,11 @@ export default class P2P extends EventEmitter {
                 pubsub: gossipsub(),
                 relay: {
                     enabled: true
+                },
+                addresses: {
+                    listen: listenAddrs || [],
+                    announce: announceAddrs || null,
+                    noAnnounce: noAnnounceAddrs || null
                 }
             });
 

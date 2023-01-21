@@ -1,5 +1,5 @@
 import type { PeerInfo } from "@libp2p/interface-peer-info";
-import type { Connection } from "@libp2p/interface-connection";
+import type { Connection, Stream } from "@libp2p/interface-connection";
 import type { Multiaddr } from "@multiformats/multiaddr";
 import * as EventEmitter from "events";
 
@@ -45,10 +45,27 @@ export default class ProtoV2 extends EventEmitter {
     static compatibleVersions = SUPPORTED_PROTOCOL_VERSION;
 
     _listenAppID: string[];
+
     _publicCache: {
-        [appID: string]: Set<string>
+        [appID: string]: Map<string, {
+            versions: string[],
+            addresses: Multiaddr[]
+        }>
     } = {};
-    _activePath: {}
+
+    _hiddenNodesCache: Map<string, {
+        versions: string[],
+        addresses: Multiaddr[]
+    }> = new Map();
+
+    _activePath: {
+        [appID: string]: Set<{
+            public: boolean,
+            score: number,
+            hop: number,
+            stream: Stream
+        }>
+    } = {}
 
     config: Config;
     libp2p: P2P;

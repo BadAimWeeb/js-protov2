@@ -43,8 +43,11 @@ export default function handleDiscovery(protov2: ProtoV2) {
             let highestVersion = semver.maxSatisfying(versions, SUPPORTED_PROTOCOL_VERSION.join(" || "));
             log("Found peer %s advertising support for ProtoV2 app %s protocol version(s) %s; max version is %s", peerID, appID, versions.join(", "), highestVersion || "none");
 
-            if (!protov2._publicCache[appID]) protov2._publicCache[appID] = new Set();
-            protov2._publicCache[appID].add(peerID);
+            if (!protov2._publicCache[appID]) protov2._publicCache[appID] = new Map();
+            protov2._publicCache[appID].set(peerID, {
+                versions,
+                addresses: peerInfo.detail.multiaddrs
+            });
         }
 
         protov2.emit("protov2:discover", {

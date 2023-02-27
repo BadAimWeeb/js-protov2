@@ -40,9 +40,11 @@
     "@libp2p/websockets": "^5.0.2",
     "@libp2p/webtransport": "^1.0.7",
     "debug": "^4.3.4",
+    "kyber-crystals": "^1.0.5",
     "libp2p": "^0.42.0",
     "msgpack-lite": "^0.1.26",
     "semver": "^7.3.8",
+    "superdilithium": "^2.0.3",
     "supports-color": "^9.3.1",
     "wrtc": "^0.4.7"
   }

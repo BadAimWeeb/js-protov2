@@ -3,9 +3,10 @@ import type { Connection, Stream } from "@libp2p/interface-connection";
 import type { Multiaddr } from "@multiformats/multiaddr";
 import * as EventEmitter from "events";
 
-import { SUPPORTED_PROTOCOL_VERSION } from "./constant.js";
 import P2P from "./libp2p.js";
 import handleDiscovery from "./protov2_discovery.js";
+import type { Duplex } from "stream";
+import ProtoV2Connection from "./connection.js";
 
 export type Config = {
     isNodejs?: boolean;
@@ -17,7 +18,7 @@ export type Config = {
             privateKey?: string; //   server-only: used for endpoint verification
             hiddenNode?: boolean; //  server-only: do not broadcast this node as a public server
         }
-    }[];
+    };
 
     bootstrap?: string[];
 
@@ -42,8 +43,6 @@ export default interface ProtoV2 extends EventEmitter {
 }
 
 export default class ProtoV2 extends EventEmitter {
-    static compatibleVersions = SUPPORTED_PROTOCOL_VERSION;
-
     _listenAppID: string[];
 
     _publicCache: {
@@ -63,9 +62,12 @@ export default class ProtoV2 extends EventEmitter {
             public: boolean,
             score: number,
             hop: number,
-            stream: Stream
+            stream: Stream,
+            connection: Connection
         }>
     } = {}
+
+    _activeListen: Map<string, ProtoV2Connection> = new Map();
 
     config: Config;
     libp2p: P2P;
@@ -99,13 +101,24 @@ export default class ProtoV2 extends EventEmitter {
         handleDiscovery(this);
     }
 
+    async connect(appID: string, serverHash?: string): Promise<[serverHash: string, connection: Duplex]> {
+        if (!this._listenAppID.includes(appID)) {
+            throw new Error(`AppID ${appID} is not registered`);
+        }
+
+        let serverList = new Map<string, {}>();
+        for (;;) {
+            let serverInfo = this._publicCache[appID];
+            
+
+        }
+    }
+
     async start() {
         await this.libp2p.start();
-        let libp2p = this.libp2p.libp2p!;
     }
 
     async stop() {
         await this.libp2p.stop();
-        let libp2p = this.libp2p.libp2p!;
     }
 }

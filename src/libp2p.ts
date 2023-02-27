@@ -38,14 +38,12 @@ export default class P2P extends EventEmitter {
         bootstrapAddrs,
         listenAddrs,
         announceAddrs,
-        appendAnnounceAddrs,
         noAnnounceAddrs
     }: {
         isNodejs?: boolean;
         bootstrapAddrs?: string[];
         listenAddrs?: string[];
         announceAddrs?: string[];
-        appendAnnounceAddrs?: string[];
         noAnnounceAddrs?: string[];
     }) {
         super();

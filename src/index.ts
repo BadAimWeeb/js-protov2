@@ -6,26 +6,38 @@ import * as EventEmitter from "events";
 import P2P from "./libp2p.js";
 import handleDiscovery from "./protov2_discovery.js";
 import type { Duplex } from "stream";
-import ProtoV2Connection from "./connection.js";
+import ProtoV2Session from "./session.js";
 
 export type Config = {
+    /** Enable specific protocols that are only available in Node, and disable specific protocols that are (temporary) only available in browser. */
     isNodejs?: boolean;
 
+    /** Allow for listening and/or (hidden) relaying for applications */
     identifiers: {
         [appID: string]: {
-            symmetricKey: string; //  used for relay verification
-            publicKeys?: string[]; // client-only: used for endpoint verification
-            privateKey?: string; //   server-only: used for endpoint verification
-            hiddenNode?: boolean; //  server-only: do not broadcast this node as a public server
+            /** This will be used for relay/client verification. */
+            symmetricKey: string;
+            /** This will be used to make sure you are connecting to correct servers. */
+            publicKeys?: string[];
+            /** This will be used to sign new keys and making sure that clients are talking to correct server (Root CA?). */
+            privateKey?: string;
+            /** Do not broadcast support for this application (as a public server), only serves through hidden proto (WIP). */
+            hiddenNode?: boolean;
         }
     };
 
+    /** Bootstrap nodes: Will be connected first to quickly intergate to P2P network (and be able to connect to server quickly). */
     bootstrap?: string[];
 
+    /** Listening address to let other nodes to connect to this node. */
     listenAddrs?: string[];
+    /** If set, this set of address will be broadcasted instead. */
     announceAddrs?: string[];
-    appendAnnounceAddrs?: string[];
+    /** If set, addresses matched address inside this will not be broadcasted. */
     noAnnounceAddrs?: string[];
+
+    /** How many milliseconds after disconnection before session deletion. */
+    resumptionWait?: number;
 }
 
 export default interface ProtoV2 extends EventEmitter {
@@ -67,7 +79,9 @@ export default class ProtoV2 extends EventEmitter {
         }>
     } = {}
 
-    _activeListen: Map<string, ProtoV2Connection> = new Map();
+    _activeListen: {
+        [appID: string]: Map<string, ProtoV2Session>
+    } = {};
 
     config: Config;
     libp2p: P2P;
@@ -82,7 +96,6 @@ export default class ProtoV2 extends EventEmitter {
             bootstrapAddrs: config.bootstrap,
             listenAddrs: config.listenAddrs,
             announceAddrs: config.announceAddrs,
-            appendAnnounceAddrs: config.appendAnnounceAddrs,
             noAnnounceAddrs: config.noAnnounceAddrs
         });
 
@@ -107,9 +120,9 @@ export default class ProtoV2 extends EventEmitter {
         }
 
         let serverList = new Map<string, {}>();
-        for (;;) {
+        for (; ;) {
             let serverInfo = this._publicCache[appID];
-            
+
 
         }
     }

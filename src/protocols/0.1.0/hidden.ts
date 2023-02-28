@@ -6,7 +6,7 @@ import { decode, encode } from "msgpack-lite";
 import { randomString } from "../../utils.js";
 import { convertLibp2pStream } from "../../stream_wrapper.js";
 
-const log = debug("protov2:hidden_proto:0.1.0");
+const log = debug("protov2:hidden_server:0.1.0");
 
 export default (protov2: ProtoV2, connection: Connection, stream: Stream) => {
     log(`connection from ${connection.remotePeer.toString()}`);

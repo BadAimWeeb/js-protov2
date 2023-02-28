@@ -9,7 +9,7 @@ import { convertLibp2pStream } from "../../stream_wrapper.js";
 import { randomString } from "../../utils.js";
 import ProtoV2Session from "../../session.js";
 
-const log = debug("protov2:proto:0.1.0");
+const log = debug("protov2:server:0.1.0");
 
 // Compatibility with both NodeJS and Browser
 const SubtleCrypto = globalThis.crypto.subtle;
@@ -143,6 +143,7 @@ export default (protov2: ProtoV2, appID: string, connection: Connection, stream:
                                         // Session doesn't exist, create new session
                                         oConnection = new ProtoV2Session(data[1], false);
                                         protov2._activeListen[appID].set(data[1], oConnection);
+                                        
                                     }
 
                                     async function handleDataSend(qos: number, data: Uint8Array, dupID?: number) {

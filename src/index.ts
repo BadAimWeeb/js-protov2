@@ -3,10 +3,15 @@ import type { Connection, Stream } from "@libp2p/interface-connection";
 import type { Multiaddr } from "@multiformats/multiaddr";
 import * as EventEmitter from "events";
 
+import { peerIdFromString } from "@libp2p/peer-id";
 import P2P from "./libp2p.js";
 import handleDiscovery from "./protov2_discovery.js";
 import type { Duplex } from "stream";
 import ProtoV2Session from "./session.js";
+
+import { superDilithium } from "superdilithium";
+
+import ClientProtoV2_0_1_0 from "./protocols/0.1.0/client.js";
 
 export type Config = {
     /** Enable specific protocols that are only available in Node, and disable specific protocols that are (temporary) only available in browser. */
@@ -42,8 +47,11 @@ export type Config = {
 
 export default interface ProtoV2 extends EventEmitter {
     on(event: "libp2p:peer:connect", listener: (peerInfo: CustomEvent<Connection>) => void): this;
+    emit(event: "libp2p:peer:connect", peerInfo: CustomEvent<Connection>): boolean;
     on(event: "libp2p:peer:disconnect", listener: (peerInfo: CustomEvent<Connection>) => void): this;
+    emit(event: "libp2p:peer:disconnect", peerInfo: CustomEvent<Connection>): boolean;
     on(event: "libp2p:peer:discovery", listener: (peerInfo: CustomEvent<PeerInfo>) => void): this;
+    emit(event: "libp2p:peer:discovery", peerInfo: CustomEvent<PeerInfo>): boolean;
     on(event: "protov2:discover", listener: (info: {
         id: string,
         addresses: Multiaddr[],
@@ -52,6 +60,18 @@ export default interface ProtoV2 extends EventEmitter {
             [appID: string]: string[]
         }
     }) => void): this;
+    emit(event: "protov2:discover", info: {
+        id: string,
+        addresses: Multiaddr[],
+        versions: string[];
+        apps: {
+            [appID: string]: string[]
+        }
+    }): boolean;
+
+    /** Listen for incoming connection */
+    on(event: "protov2:session", listener: (appID: string, session: ProtoV2Session) => void): this;
+    emit(event: "protov2:session", appID: string, session: ProtoV2Session): boolean;
 }
 
 export default class ProtoV2 extends EventEmitter {
@@ -100,13 +120,13 @@ export default class ProtoV2 extends EventEmitter {
         });
 
         this.libp2p.waitLibp2p().then(p2p => {
-            p2p.addEventListener("peer:connect", (peerInfo: CustomEvent<Connection>) => {
+            p2p.addEventListener("peer:connect", (peerInfo) => {
                 this.emit("libp2p:peer:connect", peerInfo);
             });
-            p2p.addEventListener("peer:disconnect", (peerInfo: CustomEvent<Connection>) => {
+            p2p.addEventListener("peer:disconnect", (peerInfo) => {
                 this.emit("libp2p:peer:disconnect", peerInfo);
             });
-            p2p.addEventListener("peer:discovery", (peerInfo: CustomEvent<PeerInfo>) => {
+            p2p.addEventListener("peer:discovery", (peerInfo) => {
                 this.emit("libp2p:peer:discovery", peerInfo);
             });
         });
@@ -114,7 +134,7 @@ export default class ProtoV2 extends EventEmitter {
         handleDiscovery(this);
     }
 
-    async connect(appID: string, serverHash?: string): Promise<[serverHash: string, connection: Duplex]> {
+    async connect(appID: string): Promise<[serverHash: string, connection: ProtoV2Session]> {
         if (!this._listenAppID.includes(appID)) {
             throw new Error(`AppID ${appID} is not registered`);
         }
@@ -123,7 +143,24 @@ export default class ProtoV2 extends EventEmitter {
         for (; ;) {
             let serverInfo = this._publicCache[appID];
 
+            if (serverInfo) {
+                for (let [serverHash, info] of serverInfo) {
+                    try {
+                        let connection = await this.libp2p.libp2p!.dial(peerIdFromString(serverHash));
+                        let stream = await connection.newStream("/protov2/" + appID + "/0.1.0");
 
+                        let k = await superDilithium.keyPair();
+
+                        let f = await ClientProtoV2_0_1_0(this, appID, {
+                            privateKey: Array.from(k.privateKey).map(x => x.toString(16)).join(""),
+                            publicKey: Array.from(k.publicKey).map(x => x.toString(16)).join("")
+                        }, connection, stream);
+
+                        return [serverHash, f[1]];
+                    } catch {}
+                }
+            }
+            await new Promise(resolve => setTimeout(resolve, 5000));
         }
     }
 

@@ -41,7 +41,7 @@ export default (protov2: ProtoV2, appID: string, connection: Connection, stream:
                 }, encryptionKey, encryptedData);
 
                 // Decode the data
-                return decode(new Uint8Array(decryptedData));
+                return buf[0] === 0x03 ? new Uint8Array(decryptedData) : decode(new Uint8Array(decryptedData));
             })() : decode(buf.slice(1)));
 
             switch (buf[0]) {
@@ -132,9 +132,9 @@ export default (protov2: ProtoV2, appID: string, connection: Connection, stream:
                                 )) {
                                     // Handshake successful
                                     handshaked = true;
-                                    
+
                                     if (!Object.hasOwn(protov2._activeListen, appID)) protov2._activeListen[appID] = new Map();
-                                    
+
                                     // Test if session exists
                                     if (protov2._activeListen[appID].has(data[1])) {
                                         // Session exists, hook up existing session
@@ -198,7 +198,7 @@ export default (protov2: ProtoV2, appID: string, connection: Connection, stream:
                                     njsStream.on("close", () => {
                                         oConnection!.removeListener("data_ret", handleDataSend);
                                         oConnection!.removeListener("qos1:queued", handleDataRequeue);
-                                        
+
                                         setTimeout(() => {
                                             if (oConnection.listenerCount("data_ret") === 0) {
                                                 oConnection.emit("close");
@@ -220,6 +220,44 @@ export default (protov2: ProtoV2, appID: string, connection: Connection, stream:
 
                 case 0x03: {
                     if (!handshaked) njsStream.end();
+
+                    if (data[0] === 1) {
+                        // QoS 1 packet
+                        let dupID = (data[1] << 24) | (data[2] << 16) | (data[3] << 8) | data[4];
+                        if (data[5] === 0xFF) {
+                            // ACK packet
+                            oConnection.qos1Accepted.add(dupID);
+                        } else {
+                            let packetData = (data as Uint8Array).slice(6);
+
+                            oConnection.qos1Accepted.add(dupID);
+                            oConnection.emit("data", 1, packetData);
+
+                            // Send ACK
+                            let iv = crypto.getRandomValues(new Uint8Array(16));
+                            let encryptedData = await SubtleCrypto.encrypt({
+                                name: "AES-GCM",
+                                iv: iv
+                            }, encryptionKey, Uint8Array.from([
+                                1,
+                                (dupID >> 24) & 0xFF,
+                                (dupID >> 16) & 0xFF,
+                                (dupID >> 8) & 0xFF,
+                                dupID & 0xFF,
+                                0xFF
+                            ]));
+
+                            njsStream.write(Uint8Array.from([
+                                0x03,
+                                ...iv,
+                                ...new Uint8Array(encryptedData)
+                            ]));
+                        }
+                    } else {
+                        // QoS 0 packet
+                        let packetData = (data as Uint8Array).slice(1);
+                        oConnection.emit("data", 0, packetData);
+                    }
                 }
             }
         } catch (e) {

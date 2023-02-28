@@ -54,7 +54,7 @@ export default function handleDiscovery(protov2: ProtoV2) {
             versions: acceptVersions,
             apps,
             id: peerID,
-            address: peerInfo.detail.multiaddrs
+            addresses: peerInfo.detail.multiaddrs
         });
     });
 }

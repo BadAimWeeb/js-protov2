@@ -106,8 +106,8 @@ export default class P2P extends EventEmitter {
                 },
                 addresses: {
                     listen: listenAddrs || [],
-                    announce: announceAddrs || null,
-                    noAnnounce: noAnnounceAddrs || null
+                    announce: announceAddrs || undefined,
+                    noAnnounce: noAnnounceAddrs || undefined
                 }
             });
 

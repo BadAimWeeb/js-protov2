@@ -3,8 +3,10 @@ import type { Connection, Stream } from "@libp2p/interface-connection";
 
 import debug from "debug";
 import { decode, encode } from "msgpack-lite";
-import { kyber } from "kyber-crystals";
-import { superDilithium } from "superdilithium";
+import pkg1 from "kyber-crystals";
+import pkg2 from "superdilithium";
+const { kyber } = pkg1;
+const { superDilithium } = pkg2;
 import { convertLibp2pStream } from "../../stream_wrapper.js";
 import ProtoV2Session from "../../session.js";
 

@@ -3,8 +3,10 @@ import type { Connection, Stream } from "@libp2p/interface-connection";
 
 import debug from "debug";
 import { decode, encode } from "msgpack-lite";
-import { kyber } from "kyber-crystals";
-import { superDilithium } from "superdilithium";
+import pkg1 from "kyber-crystals";
+import pkg2 from "superdilithium";
+const { kyber } = pkg1;
+const { superDilithium } = pkg2;
 import { convertLibp2pStream } from "../../stream_wrapper.js";
 import { randomString } from "../../utils.js";
 import ProtoV2Session from "../../session.js";
@@ -68,8 +70,8 @@ export default (protov2: ProtoV2, appID: string, connection: Connection, stream:
                                     0x02,
                                     ...encode([
                                         2,
-                                        Array.from(keyPair.publicKey).map((x) => x.toString(16)).join(""),
-                                        Array.from(signature).map((x) => x.toString(16)).join("")
+                                        Array.from(keyPair.publicKey).map((x) => x.toString(16).padStart(2, "0")).join(""),
+                                        Array.from(signature).map((x) => x.toString(16).padStart(2, "0")).join("")
                                     ])
                                 ]));
                                 break;

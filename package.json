@@ -1,9 +1,10 @@
 {
   "name": "@badaimweeb/js-protov2",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "ProtoV2 - BadAimWeeb's standard for client-server communication",
   "main": "dist/index.js",
   "scripts": {
+    "keygen": "node ./dist/scripts/keygen.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "prepublishOnly": "npm run build"

@@ -6,10 +6,10 @@ import * as EventEmitter from "events";
 import { peerIdFromString } from "@libp2p/peer-id";
 import P2P from "./libp2p.js";
 import handleDiscovery from "./protov2_discovery.js";
-import type { Duplex } from "stream";
 import ProtoV2Session from "./session.js";
 
-import { superDilithium } from "superdilithium";
+import pkg2 from "superdilithium";
+const { superDilithium } = pkg2;
 
 import ClientProtoV2_0_1_0 from "./protocols/0.1.0/client.js";
 

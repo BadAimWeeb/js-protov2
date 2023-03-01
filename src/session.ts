@@ -1,4 +1,4 @@
-import { type Duplex, EventEmitter } from "stream";
+import EventEmitter from "events";
 
 export default interface ProtoV2Session extends EventEmitter {
     /** Use this to receive data */

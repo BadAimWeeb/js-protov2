@@ -1,7 +1,7 @@
 import type { PeerInfo } from "@libp2p/interface-peer-info";
 import type { Connection, Stream } from "@libp2p/interface-connection";
 import type { Multiaddr } from "@multiformats/multiaddr";
-import * as EventEmitter from "events";
+import { EventEmitter } from "events";
 
 import { peerIdFromString } from "@libp2p/peer-id";
 import P2P from "./libp2p.js";

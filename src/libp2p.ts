@@ -1,4 +1,4 @@
-import * as EventEmitter from 'events';
+import { EventEmitter } from "events";
 import { createLibp2p, Libp2p, Libp2pOptions } from 'libp2p';
 
 // WebRTC for Node.js

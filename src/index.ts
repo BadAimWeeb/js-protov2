@@ -130,10 +130,10 @@ export default class ProtoV2 extends EventEmitter {
             p2p.addEventListener("peer:discovery", (peerInfo) => {
                 this.emit("libp2p:peer:discovery", peerInfo);
             });
-        });
 
-        handleDiscovery(this);
-        handleApplicationConnections(this);
+            handleDiscovery(this);
+            handleApplicationConnections(this);
+        });
     }
 
     async connect(appID: string): Promise<[serverHash: string, connection: ProtoV2Session]> {
@@ -159,7 +159,7 @@ export default class ProtoV2 extends EventEmitter {
                         }, connection, stream);
 
                         return [serverHash, f[1]];
-                    } catch {}
+                    } catch { }
                 }
             }
             await new Promise(resolve => setTimeout(resolve, 5000));

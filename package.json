@@ -1,6 +1,6 @@
 {
   "name": "@badaimweeb/js-protov2",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "ProtoV2 - BadAimWeeb's standard for client-server communication",
   "main": "dist/index.js",
   "scripts": {

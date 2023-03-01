@@ -6,6 +6,7 @@ import { EventEmitter } from "events";
 import { peerIdFromString } from "@libp2p/peer-id";
 import P2P from "./libp2p.js";
 import handleDiscovery from "./protov2_discovery.js";
+import handleApplicationConnections from "./protov2_handleApplication.js";
 import ProtoV2Session from "./session.js";
 
 import pkg2 from "superdilithium";
@@ -132,6 +133,7 @@ export default class ProtoV2 extends EventEmitter {
         });
 
         handleDiscovery(this);
+        handleApplicationConnections(this);
     }
 
     async connect(appID: string): Promise<[serverHash: string, connection: ProtoV2Session]> {

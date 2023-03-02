@@ -14,6 +14,8 @@ const { superDilithium } = pkg2;
 
 import ClientProtoV2_0_1_0 from "./protocols/0.1.0/client.js";
 
+export { ProtoV2Session, P2P };
+
 export type Config = {
     /** Enable specific protocols that are only available in Node, and disable specific protocols that are (temporary) only available in browser. */
     isNodejs?: boolean;

@@ -226,5 +226,7 @@ export default (protov2: ProtoV2, appID: string, session: {
         njsStream.on("close", () => {
             reject(new Error("connection closed"));
         });
+
+        njsStream.write(Uint8Array.from([0x02, 0xC0]));
     });
 }
